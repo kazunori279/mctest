@@ -22,6 +22,9 @@ func main() {
 	fmt.Printf("Set min: %v, max: %v, 90%%: %v, 99%%: %v \n", 
 		stats.Min(timeToSet), stats.Max(timeToSet),
 		stats.Percentile(timeToSet, 90), stats.Percentile(timeToSet, 99))
+	fmt.Printf("Get min: %v, max: %v, 90%%: %v, 99%%: %v \n", 
+		stats.Min(timeToGet), stats.Max(timeToGet),
+		stats.Percentile(timeToGet, 90), stats.Percentile(timeToGet, 99))
 }
 
 func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
