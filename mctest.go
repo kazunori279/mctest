@@ -12,19 +12,25 @@ import (
 )
 
 func main() {
-	mc := memcache.New("localhost:11211")
-	n := 10000
+	mc := memcache.New("169.254.10.0:11211")
+	n := 1000
 	timeToSet := make([]float64, n)
 	timeToGet := make([]float64, n)
 	for i := 0; i < n; i++ {
 		timeToSet[i], timeToGet[i] = measureSetAndGetTime(mc)
+		if i > 0 && timeToSet[i] < 0 {
+			timeToSet[i] = timeToSet[i - 1] 
+		}
+		if i > 0 && timeToGet[i] < 0 {
+			timeToGet[i] = timeToGet[i - 1]
+		}
 	}
-	fmt.Printf("Set min: %v, max: %v, 90%%: %v, 99%%: %v \n",
-		stats.Min(timeToSet), stats.Max(timeToSet),
-		stats.Percentile(timeToSet, 90), stats.Percentile(timeToSet, 99))
-	fmt.Printf("Get min: %v, max: %v, 90%%: %v, 99%%: %v \n",
-		stats.Min(timeToGet), stats.Max(timeToGet),
-		stats.Percentile(timeToGet, 90), stats.Percentile(timeToGet, 99))
+	fmt.Printf("Set min: %.2f, max: %.2f, median: %.2f, 95%%: %.2f, 99%%: %.2f \n",
+		stats.Min(timeToSet), stats.Max(timeToSet), stats.Median(timeToSet),
+		stats.Percentile(timeToSet, 95), stats.Percentile(timeToSet, 99))
+	fmt.Printf("Get min: %.2f, max: %.2f, median: %.2f, 95%%: %.2f, 99%%: %.2f \n",
+		stats.Min(timeToGet), stats.Max(timeToGet), stats.Median(timeToGet),
+		stats.Percentile(timeToGet, 95), stats.Percentile(timeToGet, 99))
 }
 
 func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
