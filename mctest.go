@@ -7,13 +7,17 @@ import (
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/montanaflynn/stats"
-	"os"
 	"time"
 )
 
 func main() {
+	for {
+		measure(1000)
+	}
+}
+
+func measure(n int) {
 	mc := memcache.New("169.254.10.0:11211")
-	n := 1000
 	timeToSet := make([]float64, n)
 	timeToGet := make([]float64, n)
 	for i := 0; i < n; i++ {
@@ -49,14 +53,14 @@ func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
 	it, err := mc.Get(k)
 	if err != nil {
 		fmt.Printf("%v\n", err)
-		os.Exit(1)
+	 	return -1, -1
 	}
 	timeToGet := float64((time.Now().Nanosecond() - start)) / 1000.0
 
 	// validate the value
 	if !bytes.Equal(it.Value, v) {
 		fmt.Printf("Wrong value: %v\n", it.Value)
-		os.Exit(1)
+	 	return -1, -1
 	}
 	return timeToSet, timeToGet
 }
