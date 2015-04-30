@@ -2,12 +2,13 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/montanaflynn/stats"
 	"time"
+	"encoding/binary"
+	"strconv"
+	"crypto/rand"
 )
 
 func main() {
@@ -40,8 +41,8 @@ func measure(n int) {
 func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
 
 	// create key and value
-	k := randStr(10)
-	v := []byte(randStr(1024))
+	k := rand12Chars(1) // 12 bytes
+	v := []byte(rand12Chars(85)) // 1020 bytes
 
 	// test setting
 	start := time.Now().Nanosecond()
@@ -65,8 +66,12 @@ func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
 	return timeToSet, timeToGet
 }
 
-func randStr(l int) string {
-	v := make([]byte, l)
-	rand.Read(v)
-	return base64.URLEncoding.EncodeToString(v)
+func rand12Chars(l int) string {
+	var buf bytes.Buffer	
+	for i := 0; i < l; i++ {
+		var n uint64
+		binary.Read(rand.Reader, binary.LittleEndian, &n)
+		buf.WriteString(strconv.FormatUint(n, 36))
+	}
+	return buf.String() 
 }
