@@ -16,7 +16,7 @@ func main() {
 	initGRs := runtime.NumGoroutine()
         maxGRs := 1
 	for {
-		for runtime.NumGoroutine() < initGRs + maxGRs {
+		for runtime.NumGoroutine() - initGRs < maxGRs {
 			go measure(1000)
 		}
 	}
