@@ -9,11 +9,16 @@ import (
 	"encoding/binary"
 	"strconv"
 	"crypto/rand"
+	"runtime"
 )
 
 func main() {
+	initGRs := runtime.NumGoroutine()
+        maxGRs := 1
 	for {
-		measure(1000)
+		for runtime.NumGoroutine() < initGRs + maxGRs {
+			go measure(1000)
+		}
 	}
 }
 
