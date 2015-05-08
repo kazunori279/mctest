@@ -25,3 +25,7 @@ cd ~/git
 git clone https://github.com/kazunori279/mctest.git
 go get github.com/bradfitz/gomemcache/memcache
 go get github.com/montanaflynn/stats
+
+# specify the following on metadata server with a key "startup-script"
+# su -c  "go run ~/git/mctest/mctest.go > ~/mctest.log" - <username>
+
