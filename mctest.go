@@ -13,18 +13,19 @@ import (
 )
 
 func main() {
+	mc := memcache.New("169.254.10.0:11211")
+ 	mc.Timeout = 20 * 1000 * time.Millisecond // 20 sec				
 	initGRs := runtime.NumGoroutine()
-        maxGRs := 16 
+        maxGRs := 8 
 	for {
-		time.Sleep(100)
+		time.Sleep(1000)
 		for runtime.NumGoroutine() - initGRs < maxGRs {
-			go measure(1000)
+			go measure(1000, mc)
 		}
 	}
 }
 
-func measure(n int) {
-	mc := memcache.New("169.254.10.0:11211")
+func measure(n int, mc *memcache.Client) {
 	timeToSet := make([]float64, n)
 	timeToGet := make([]float64, n)
 	for i := 0; i < n; i++ {
@@ -36,12 +37,21 @@ func measure(n int) {
 			timeToGet[i] = timeToGet[i - 1]
 		}
 	}
+	min, _ := stats.Min(timeToSet)
+	max, _ := stats.Max(timeToSet)
+	med, _ := stats.Median(timeToSet)
+	p95, _ := stats.Percentile(timeToSet, 95)
+	p99, _ := stats.Percentile(timeToSet, 99)
 	fmt.Printf("Set min: %.2f, max: %.2f, median: %.2f, 95%%: %.2f, 99%%: %.2f \n",
-		stats.Min(timeToSet), stats.Max(timeToSet), stats.Median(timeToSet),
-		stats.Percentile(timeToSet, 95), stats.Percentile(timeToSet, 99))
+		min, max, med, p95, p99)
+
+	min, _ = stats.Min(timeToGet)
+	max, _ = stats.Max(timeToGet)
+	med, _ = stats.Median(timeToGet)
+	p95, _ = stats.Percentile(timeToGet, 95)
+	p99, _ = stats.Percentile(timeToGet, 99)
 	fmt.Printf("Get min: %.2f, max: %.2f, median: %.2f, 95%%: %.2f, 99%%: %.2f \n",
-		stats.Min(timeToGet), stats.Max(timeToGet), stats.Median(timeToGet),
-		stats.Percentile(timeToGet, 95), stats.Percentile(timeToGet, 99))
+		min, max, med, p95, p99)
 }
 
 func measureSetAndGetTime(mc *memcache.Client) (float64, float64) {
